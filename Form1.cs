@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -13,57 +14,72 @@ namespace Projet___Gestionnaire_MDP
 {
     public partial class Form1 : Form
     {
+        private readonly string filePath = "passwords.dat"; // Fichier local pour sauvegarder les mots de passe
+        private readonly string encryptionKey = "MySuperSecureKey123!"; // Clé de chiffrement AES (doit faire 16 ou 32 caractères)
 
-        // Methode Cryptage
-        private string Encrypt(string clearText)
+        public Form1()
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(clearText);
-            return Convert.ToBase64String(bytes);
+            InitializeComponent();
         }
 
-
-
-
-
-        // Methode Decryptage
-        private string Decrypt(string encryptedText)
+        private void Form1_Load(object sender, EventArgs e)
         {
-            byte[] bytes = Convert.FromBase64String(encryptedText);
-            return Encoding.UTF8.GetString(bytes);
+            LoadPasswords();
         }
 
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            SavePasswords(); 
+        }
 
-
-
-
-        // Methode pour sauvegarder les mdp
+        // Méthode pour sauvegarder les mots de passe
         private void SavePasswords()
         {
-            using (StreamWriter sw = new StreamWriter("passwords.txt"))
+            try
             {
+                var passwordData = new StringBuilder();
+
+                
                 foreach (DataGridViewRow row in dataGridView.Rows)
                 {
-                    if (row.Cells[0].Value != null)
+                    if (!row.IsNewRow)
                     {
-                        string line = $"{row.Cells[0].Value};{row.Cells[1].Value};{row.Cells[2].Value}";
-                        sw.WriteLine(line);
+                        string app = row.Cells["colApplication"].Value?.ToString() ?? "";
+                        string username = row.Cells["colUsername"].Value?.ToString() ?? "";
+                        string password = row.Cells["colPassword"].Value?.ToString() ?? "";
+
+                        
+                        passwordData.AppendLine($"{app};{username};{password}");
                     }
                 }
+
+                
+                string encryptedData = Encrypt(passwordData.ToString(), encryptionKey);
+                File.WriteAllText(filePath, encryptedData);
+
+                MessageBox.Show("Mots de passe sauvegardés avec succès !", "Sauvegarde");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erreur lors de la sauvegarde : {ex.Message}", "Erreur");
             }
         }
 
-
-
-
-        // Methode pour charger les mdp sauvegardés dans la methode SavePassword
+        // Méthode pour charger les mots de passe
         private void LoadPasswords()
         {
-            if (File.Exists("passwords.txt"))
+            try
             {
-                using (StreamReader sr = new StreamReader("passwords.txt"))
+                if (File.Exists(filePath))
                 {
-                    string line;
-                    while ((line = sr.ReadLine()) != null)
+                    
+                    string encryptedData = File.ReadAllText(filePath);
+                    string decryptedData = Decrypt(encryptedData, encryptionKey);
+
+                    
+                    string[] lines = decryptedData.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+                    foreach (string line in lines)
                     {
                         string[] parts = line.Split(';');
                         if (parts.Length == 3)
@@ -73,11 +89,66 @@ namespace Projet___Gestionnaire_MDP
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erreur lors du chargement : {ex.Message}", "Erreur");
+            }
         }
 
+        // Méthodes pour chiffrer et déchiffrer les données (AES)
+        private string Encrypt(string plainText, string key)
+        {
+            byte[] keyBytes = Encoding.UTF8.GetBytes(key.PadRight(32).Substring(0, 32));
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = keyBytes;
+                aes.IV = new byte[16]; // IV par défaut (zéro)
+                using (MemoryStream ms = new MemoryStream())
+                using (CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                {
+                    byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
+                    cs.Write(plainBytes, 0, plainBytes.Length);
+                    cs.Close();
+                    return Convert.ToBase64String(ms.ToArray());
+                }
+            }
+        }
 
+        private string Decrypt(string cipherText, string key)
+        {
+            byte[] keyBytes = Encoding.UTF8.GetBytes(key.PadRight(32).Substring(0, 32));
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = keyBytes;
+                aes.IV = new byte[16]; // IV par défaut (zéro)
+                using (MemoryStream ms = new MemoryStream())
+                using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
+                {
+                    byte[] cipherBytes = Convert.FromBase64String(cipherText);
+                    cs.Write(cipherBytes, 0, cipherBytes.Length);
+                    cs.Close();
+                    return Encoding.UTF8.GetString(ms.ToArray());
+                }
+            }
+        }
 
+         // Bouton pour ajouter un mot de passe
+        private void btnAdd_Click(object sender, EventArgs e)
+        {
+            string app = Microsoft.VisualBasic.Interaction.InputBox("Nom de l'application/site :", "Ajouter");
+            string username = Microsoft.VisualBasic.Interaction.InputBox("Nom d'utilisateur :", "Ajouter");
+            string password = Microsoft.VisualBasic.Interaction.InputBox("Mot de passe :", "Ajouter");
 
+            if (!string.IsNullOrWhiteSpace(app) && !string.IsNullOrWhiteSpace(username) && !string.IsNullOrWhiteSpace(password))
+            {
+                string encryptedPassword = Encrypt(password, encryptionKey);
+                dataGridView.Rows.Add(app, username, encryptedPassword);
+            }
+            else
+            {
+                MessageBox.Show("Tous les champs sont obligatoires.", "Erreur");
+            }
+        }
 
         // Methode export mdp depuis fichier texte
         private void ExportToTextFile()
@@ -144,35 +215,7 @@ namespace Projet___Gestionnaire_MDP
 
 
         // a partir de la c'est les methodes liées a la partie graphique (boutons) 
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            SavePasswords();
-        }
-        
 
-        public Form1()
-        {
-            InitializeComponent();
-        }        
-
-
-
-        private void btnAdd_Click(object sender, EventArgs e)
-        {
-            string app = Microsoft.VisualBasic.Interaction.InputBox("Nom de l'application/site :", "Ajouter");
-            string username = Microsoft.VisualBasic.Interaction.InputBox("Nom d'utilisateur :", "Ajouter");
-            string password = Microsoft.VisualBasic.Interaction.InputBox("Mot de passe :", "Ajouter");
-
-            if (!string.IsNullOrWhiteSpace(app) && !string.IsNullOrWhiteSpace(username) && !string.IsNullOrWhiteSpace(password))
-            {
-                string encryptedPassword = Encrypt(password);
-                dataGridView.Rows.Add(app, username, encryptedPassword);
-            }
-            else
-            {
-                MessageBox.Show("Tous les champs sont obligatoires.", "Erreur");
-            }
-        }
 
 
         private void btnDelete_Click(object sender, EventArgs e)
@@ -187,11 +230,6 @@ namespace Projet___Gestionnaire_MDP
             }
         }
 
-                     
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            LoadPasswords();
-        }
 
 
         private void aProposToolStripMenuItem_Click(object sender, EventArgs e)
