@@ -28,25 +28,25 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle25 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle26 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle27 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.dataGridView = new System.Windows.Forms.DataGridView();
-            this.btnDelete = new System.Windows.Forms.Button();
-            this.btnAdd = new System.Windows.Forms.Button();
-            this.menuStrip2 = new System.Windows.Forms.MenuStrip();
-            this.fichierToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.importerLesMotsDePassesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.exporterLesMotsDePassesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.quitterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.aProposToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colApplication = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colUsername = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colPassword = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.btnDelete = new System.Windows.Forms.Button();
+            this.btnAdd = new System.Windows.Forms.Button();
+            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.fichierToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.importerLesMotsDePassesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importerDepuisTXTToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exporterLesMotsDePassesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exporterVersTXTToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.quitterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aProposToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
-            this.menuStrip2.SuspendLayout();
+            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // dataGridView
@@ -62,6 +62,33 @@
             this.dataGridView.Size = new System.Drawing.Size(984, 427);
             this.dataGridView.TabIndex = 0;
             this.dataGridView.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView_CellContentClick);
+            // 
+            // colApplication
+            // 
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(56)))), ((int)(((byte)(95)))), ((int)(((byte)(41)))));
+            this.colApplication.DefaultCellStyle = dataGridViewCellStyle1;
+            this.colApplication.HeaderText = "Application / Site";
+            this.colApplication.Name = "colApplication";
+            this.colApplication.Width = 313;
+            // 
+            // colUsername
+            // 
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(135)))), ((int)(((byte)(135)))));
+            this.colUsername.DefaultCellStyle = dataGridViewCellStyle2;
+            this.colUsername.HeaderText = "Username";
+            this.colUsername.Name = "colUsername";
+            this.colUsername.Width = 313;
+            // 
+            // colPassword
+            // 
+            dataGridViewCellStyle3.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(54)))), ((int)(((byte)(45)))), ((int)(((byte)(123)))));
+            this.colPassword.DefaultCellStyle = dataGridViewCellStyle3;
+            this.colPassword.HeaderText = "Mot de passe";
+            this.colPassword.Name = "colPassword";
+            this.colPassword.Width = 315;
             // 
             // btnDelete
             // 
@@ -83,16 +110,17 @@
             this.btnAdd.UseVisualStyleBackColor = true;
             this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
             // 
-            // menuStrip2
+            // menuStrip1
             // 
-            this.menuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fichierToolStripMenuItem,
             this.aProposToolStripMenuItem});
-            this.menuStrip2.Location = new System.Drawing.Point(0, 0);
-            this.menuStrip2.Name = "menuStrip2";
-            this.menuStrip2.Size = new System.Drawing.Size(1008, 24);
-            this.menuStrip2.TabIndex = 4;
-            this.menuStrip2.Text = "menuStrip2";
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Size = new System.Drawing.Size(1008, 24);
+            this.menuStrip1.TabIndex = 4;
+            this.menuStrip1.Text = "menuStrip1";
+            this.menuStrip1.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.menuStrip1_ItemClicked);
             // 
             // fichierToolStripMenuItem
             // 
@@ -114,6 +142,13 @@
             this.importerLesMotsDePassesToolStripMenuItem.Text = "Importer les mots de passes";
             this.importerLesMotsDePassesToolStripMenuItem.Click += new System.EventHandler(this.importerLesMotsDePassesToolStripMenuItem_Click);
             // 
+            // importerDepuisTXTToolStripMenuItem
+            // 
+            this.importerDepuisTXTToolStripMenuItem.Name = "importerDepuisTXTToolStripMenuItem";
+            this.importerDepuisTXTToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.importerDepuisTXTToolStripMenuItem.Text = "Importer depuis TXT";
+            this.importerDepuisTXTToolStripMenuItem.Click += new System.EventHandler(this.importerDepuisTXTToolStripMenuItem_Click);
+            // 
             // exporterLesMotsDePassesToolStripMenuItem
             // 
             this.exporterLesMotsDePassesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -122,6 +157,13 @@
             this.exporterLesMotsDePassesToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
             this.exporterLesMotsDePassesToolStripMenuItem.Text = "Exporter les mots de passes";
             this.exporterLesMotsDePassesToolStripMenuItem.Click += new System.EventHandler(this.exporterLesMotsDePassesToolStripMenuItem_Click);
+            // 
+            // exporterVersTXTToolStripMenuItem
+            // 
+            this.exporterVersTXTToolStripMenuItem.Name = "exporterVersTXTToolStripMenuItem";
+            this.exporterVersTXTToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.exporterVersTXTToolStripMenuItem.Text = "Exporter vers TXT";
+            this.exporterVersTXTToolStripMenuItem.Click += new System.EventHandler(this.exporterVersTXTToolStripMenuItem_Click);
             // 
             // quitterToolStripMenuItem
             // 
@@ -137,47 +179,6 @@
             this.aProposToolStripMenuItem.Text = "A propos";
             this.aProposToolStripMenuItem.Click += new System.EventHandler(this.aProposToolStripMenuItem_Click);
             // 
-            // colApplication
-            // 
-            dataGridViewCellStyle25.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle25.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(56)))), ((int)(((byte)(95)))), ((int)(((byte)(41)))));
-            this.colApplication.DefaultCellStyle = dataGridViewCellStyle25;
-            this.colApplication.HeaderText = "Application / Site";
-            this.colApplication.Name = "colApplication";
-            this.colApplication.Width = 313;
-            // 
-            // colUsername
-            // 
-            dataGridViewCellStyle26.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle26.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(135)))), ((int)(((byte)(135)))));
-            this.colUsername.DefaultCellStyle = dataGridViewCellStyle26;
-            this.colUsername.HeaderText = "Username";
-            this.colUsername.Name = "colUsername";
-            this.colUsername.Width = 313;
-            // 
-            // colPassword
-            // 
-            dataGridViewCellStyle27.BackColor = System.Drawing.Color.White;
-            dataGridViewCellStyle27.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(54)))), ((int)(((byte)(45)))), ((int)(((byte)(123)))));
-            this.colPassword.DefaultCellStyle = dataGridViewCellStyle27;
-            this.colPassword.HeaderText = "Mot de passe";
-            this.colPassword.Name = "colPassword";
-            this.colPassword.Width = 315;
-            // 
-            // importerDepuisTXTToolStripMenuItem
-            // 
-            this.importerDepuisTXTToolStripMenuItem.Name = "importerDepuisTXTToolStripMenuItem";
-            this.importerDepuisTXTToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.importerDepuisTXTToolStripMenuItem.Text = "Importer depuis TXT";
-            this.importerDepuisTXTToolStripMenuItem.Click += new System.EventHandler(this.importerDepuisTXTToolStripMenuItem_Click);
-            // 
-            // exporterVersTXTToolStripMenuItem
-            // 
-            this.exporterVersTXTToolStripMenuItem.Name = "exporterVersTXTToolStripMenuItem";
-            this.exporterVersTXTToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.exporterVersTXTToolStripMenuItem.Text = "Exporter vers TXT";
-            this.exporterVersTXTToolStripMenuItem.Click += new System.EventHandler(this.exporterVersTXTToolStripMenuItem_Click);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -187,12 +188,12 @@
             this.Controls.Add(this.btnAdd);
             this.Controls.Add(this.btnDelete);
             this.Controls.Add(this.dataGridView);
-            this.Controls.Add(this.menuStrip2);
+            this.Controls.Add(this.menuStrip1);
             this.Name = "Form1";
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).EndInit();
-            this.menuStrip2.ResumeLayout(false);
-            this.menuStrip2.PerformLayout();
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -203,7 +204,7 @@
         private System.Windows.Forms.DataGridView dataGridView;
         private System.Windows.Forms.Button btnDelete;
         private System.Windows.Forms.Button btnAdd;
-        private System.Windows.Forms.MenuStrip menuStrip2;
+        private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fichierToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem importerLesMotsDePassesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exporterLesMotsDePassesToolStripMenuItem;
