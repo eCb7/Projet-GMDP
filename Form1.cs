@@ -36,69 +36,7 @@ namespace Projet___Gestionnaire_MDP
         }
 
         // Méthode pour sauvegarder les mots de passe
-        private void SavePasswords()
-        {
-            try
-            {
-                // Vérifier qu'il y a des mots de passe dans le DataGridView
-                if (dataGridView.Rows.Count == 0)
-                {
-                    MessageBox.Show("Aucun mot de passe à sauvegarder.", "Sauvegarde");
-                    return;
-                }
-
-                var passwordList = new List<object>();
-
-                foreach (DataGridViewRow row in dataGridView.Rows)
-                {
-                    if (!row.IsNewRow)
-                    {
-                        string app = row.Cells["colApplication"].Value?.ToString() ?? "";
-                        string username = row.Cells["colUsername"].Value?.ToString() ?? "";
-                        string password = row.Cells["colPassword"].Value?.ToString() ?? "";
-
-                        // Ajouter les données de chaque ligne dans une liste
-                        passwordList.Add(new { Application = app, Username = username, Password = password });
-                    }
-                }
-
-                // Sérialisation en JSON
-                string jsonData = JsonConvert.SerializeObject(passwordList, Formatting.Indented);
-
-                // Sauvegarde du fichier JSON
-                File.WriteAllText(filePath, jsonData);
-
-                MessageBox.Show("Mots de passe sauvegardés avec succès !", "Sauvegarde");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Erreur lors de la sauvegarde : {ex.Message}", "Erreur");
-            }
-        }
-
-
-        // Méthode pour charger les mots de passe
-        private void LoadPasswords()
-        {
-            try
-            {
-                if (File.Exists(filePath))
-                {
-                    string jsonData = File.ReadAllText(filePath);
-                    var passwordList = JsonConvert.DeserializeObject<List<dynamic>>(jsonData);
-
-                    // Ajouter les mots de passe dans le DataGridView
-                    foreach (var entry in passwordList)
-                    {
-                        dataGridView.Rows.Add(entry.Application, entry.Username, entry.Password);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Erreur lors du chargement : {ex.Message}", "Erreur");
-            }
-        }
+153973
 
         // Méthodes pour chiffrer et déchiffrer les données (AES)
         private string Encrypt(string plainText, string key)
