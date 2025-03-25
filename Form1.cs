@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -9,12 +10,14 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
+using Formatting = Newtonsoft.Json.Formatting;
 
 namespace Projet___Gestionnaire_MDP
 {
     public partial class Form1 : Form
     {
-        private readonly string filePath = "passwords.dat"; // Fichier local pour sauvegarder les mots de passe
+        private readonly string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "passwords.json"); // Fichier local pour sauvegarder les mots de passe
         private readonly string encryptionKey = "MySuperSecureKey123!"; // Clé de chiffrement AES (doit faire 16 ou 32 caractères)
 
         public Form1()
@@ -37,9 +40,15 @@ namespace Projet___Gestionnaire_MDP
         {
             try
             {
-                var passwordData = new StringBuilder();
+                // Vérifier qu'il y a des mots de passe dans le DataGridView
+                if (dataGridView.Rows.Count == 0)
+                {
+                    MessageBox.Show("Aucun mot de passe à sauvegarder.", "Sauvegarde");
+                    return;
+                }
 
-                
+                var passwordList = new List<object>();
+
                 foreach (DataGridViewRow row in dataGridView.Rows)
                 {
                     if (!row.IsNewRow)
@@ -48,22 +57,25 @@ namespace Projet___Gestionnaire_MDP
                         string username = row.Cells["colUsername"].Value?.ToString() ?? "";
                         string password = row.Cells["colPassword"].Value?.ToString() ?? "";
 
-                        
-                        passwordData.AppendLine($"{app};{username};{password}");
-                    }  
+                        // Ajouter les données de chaque ligne dans une liste
+                        passwordList.Add(new { Application = app, Username = username, Password = password });
+                    }
                 }
 
-                
-                string encryptedData = Encrypt(passwordData.ToString(), encryptionKey);
-                File.WriteAllText(filePath, encryptedData);
+                // Sérialisation en JSON
+                string jsonData = JsonConvert.SerializeObject(passwordList, Formatting.Indented);
 
-                MessageBox.Show("Mots de passe sauvegardés avec succès !", "Sauvegarde");
+                // Sauvegarde du fichier JSON
+                File.WriteAllText(filePath, jsonData);
+
+                MessageBox.Show("Mots de passe sauvegardés avec succès !", "Sauvegarde");
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Erreur lors de la sauvegarde : {ex.Message}", "Erreur");
             }
         }
+
 
         // Méthode pour charger les mots de passe
         private void LoadPasswords()
@@ -72,20 +84,13 @@ namespace Projet___Gestionnaire_MDP
             {
                 if (File.Exists(filePath))
                 {
-                    
-                    string encryptedData = File.ReadAllText(filePath);
-                    string decryptedData = Decrypt(encryptedData, encryptionKey);
+                    string jsonData = File.ReadAllText(filePath);
+                    var passwordList = JsonConvert.DeserializeObject<List<dynamic>>(jsonData);
 
-                    
-                    string[] lines = decryptedData.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
-                    foreach (string line in lines)
+                    // Ajouter les mots de passe dans le DataGridView
+                    foreach (var entry in passwordList)
                     {
-                        string[] parts = line.Split(';');
-                        if (parts.Length == 3)
-                        {
-                            dataGridView.Rows.Add(parts[0], parts[1], parts[2]);
-                        }
+                        dataGridView.Rows.Add(entry.Application, entry.Username, entry.Password);
                     }
                 }
             }
@@ -254,6 +259,7 @@ namespace Projet___Gestionnaire_MDP
         private void quitterToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.Close(); // Ferme l'application
+            SavePasswords(); 
         }
 
 
