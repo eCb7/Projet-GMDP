@@ -50,7 +50,7 @@ namespace Projet___Gestionnaire_MDP
 
                         
                         passwordData.AppendLine($"{app};{username};{password}");
-                    }
+                    }  
                 }
 
                 
@@ -284,6 +284,11 @@ namespace Projet___Gestionnaire_MDP
 
         }
         private void dataGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void Form1_Load_1(object sender, EventArgs e)
         {
 
         }
