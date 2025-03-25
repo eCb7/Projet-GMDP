@@ -36,8 +36,67 @@ namespace Projet___Gestionnaire_MDP
         }
 
         // Méthode pour sauvegarder les mots de passe
-153973
+        // Méthode pour sauvegarder les mots de passe dans un fichier .txt
+private void SavePasswords()
+{
+    try
+    {
+        if (dataGridView.Rows.Count == 0)
+        {
+            MessageBox.Show("Aucun mot de passe à sauvegarder.", "Sauvegarde");
+            return;
+        }
 
+        using (StreamWriter sw = new StreamWriter(filePath))
+        {
+            foreach (DataGridViewRow row in dataGridView.Rows)
+            {
+                if (!row.IsNewRow)
+                {
+                    string app = row.Cells["colApplication"].Value?.ToString() ?? "";
+                    string username = row.Cells["colUsername"].Value?.ToString() ?? "";
+                    string password = row.Cells["colPassword"].Value?.ToString() ?? "";
+
+                    // Écrire sous la forme : application;username;password
+                    sw.WriteLine($"{app};{username};{password}");
+                }
+            }
+        }
+
+        MessageBox.Show("Mots de passe sauvegardés avec succès !", "Sauvegarde");
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"Erreur lors de la sauvegarde : {ex.Message}", "Erreur");
+    }
+}
+
+// Méthode pour charger les mots de passe depuis un fichier .txt
+private void LoadPasswords()
+{
+    try
+    {
+        if (File.Exists(filePath))
+        {
+            using (StreamReader sr = new StreamReader(filePath))
+            {
+                string line;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    string[] parts = line.Split(';');
+                    if (parts.Length == 3)
+                    {
+                        dataGridView.Rows.Add(parts[0], parts[1], parts[2]);
+                    }
+                }
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"Erreur lors du chargement : {ex.Message}", "Erreur");
+    }
+}
         // Méthodes pour chiffrer et déchiffrer les données (AES)
         private string Encrypt(string plainText, string key)
         {
