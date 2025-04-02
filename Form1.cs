@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SQLite;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -17,8 +18,8 @@ namespace Projet___Gestionnaire_MDP
 {
     public partial class Form1 : Form
     {
-        private readonly string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "passwords.json"); // Fichier local pour sauvegarder les mots de passe
-        private readonly string encryptionKey = "MySuperSecureKey123!"; // Clé de chiffrement AES (doit faire 16 ou 32 caractères)
+        private readonly string connectionString = "Data Source=passwords.db;Version=3;";
+        private string currentUser = "";
 
         public Form1()
         {
@@ -27,128 +28,207 @@ namespace Projet___Gestionnaire_MDP
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            LoadPasswords();
+            InitializeDatabase();
+            ShowLoginForm();
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             SavePasswords(); 
         }
-
-        // Méthode pour sauvegarder les mots de passe
-        // Méthode pour sauvegarder les mots de passe dans un fichier .txt
-private void SavePasswords()
-{
-    try
-    {
-        if (dataGridView.Rows.Count == 0)
+        private string HashPassword(string password)
         {
-            MessageBox.Show("Aucun mot de passe à sauvegarder.", "Sauvegarde");
-            return;
+            return BCrypt.Net.BCrypt.HashPassword(password);
         }
 
-        using (StreamWriter sw = new StreamWriter(filePath))
+        private bool VerifyPassword(string inputPassword, string storedHash)
         {
-            foreach (DataGridViewRow row in dataGridView.Rows)
-            {
-                if (!row.IsNewRow)
-                {
-                    string app = row.Cells["colApplication"].Value?.ToString() ?? "";
-                    string username = row.Cells["colUsername"].Value?.ToString() ?? "";
-                    string password = row.Cells["colPassword"].Value?.ToString() ?? "";
+            return BCrypt.Net.BCrypt.Verify(inputPassword, storedHash);
+        }
 
-                    // Écrire sous la forme : application;username;password
-                    sw.WriteLine($"{app};{username};{password}");
-                }
+        private string GeneratePassword(int length = 12)
+        {
+            const string validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*";
+            StringBuilder res = new StringBuilder();
+            Random rnd = new Random();
+            for (int i = 0; i < length; i++)
+            {
+                res.Append(validChars[rnd.Next(validChars.Length)]);
             }
+            return res.ToString();
         }
 
-        MessageBox.Show("Mots de passe sauvegardés avec succès !", "Sauvegarde");
-    }
-    catch (Exception ex)
-    {
-        MessageBox.Show($"Erreur lors de la sauvegarde : {ex.Message}", "Erreur");
-    }
-}
 
-// Méthode pour charger les mots de passe depuis un fichier .txt
-private void LoadPasswords()
-{
-    try
-    {
-        if (File.Exists(filePath))
+        private void ShowLoginForm()
         {
-            using (StreamReader sr = new StreamReader(filePath))
+            using (LoginForm loginForm = new LoginForm(connectionString))
             {
-                string line;
-                while ((line = sr.ReadLine()) != null)
+                if (loginForm.ShowDialog() != DialogResult.OK)
                 {
-                    string[] parts = line.Split(';');
-                    if (parts.Length == 3)
+                    Application.Exit();
+                    return;
+                }
+                currentUser = loginForm.Username;
+            }
+            LoadPasswords();
+        }
+
+        private void InitializeDatabase()
+        {
+            try
+            {
+                // Vérifiez si le fichier de base de données existe
+                string dbFilePath = "passwords.db";
+                if (!File.Exists(dbFilePath))
+                {
+                    SQLiteConnection.CreateFile(dbFilePath);
+                }
+
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+
+                    // Création des tables avec vérification
+                    string[] createTables = {
+                "CREATE TABLE IF NOT EXISTS Users (id INTEGER PRIMARY KEY, username TEXT UNIQUE, password_hash TEXT)",
+                "CREATE TABLE IF NOT EXISTS Passwords (id INTEGER PRIMARY KEY, user_id INTEGER, application TEXT, username TEXT, password_hash TEXT, FOREIGN KEY(user_id) REFERENCES Users(id))"
+            };
+
+                    foreach (string query in createTables)
                     {
-                        dataGridView.Rows.Add(parts[0], parts[1], parts[2]);
+                        using (SQLiteCommand command = new SQLiteCommand(query, connection))
+                        {
+                            command.ExecuteNonQuery();
+                        }
                     }
                 }
             }
-        }
-    }
-    catch (Exception ex)
-    {
-        MessageBox.Show($"Erreur lors du chargement : {ex.Message}", "Erreur");
-    }
-}
-        // Méthodes pour chiffrer et déchiffrer les données (AES)
-        private string Encrypt(string plainText, string key)
-        {
-            byte[] keyBytes = Encoding.UTF8.GetBytes(key.PadRight(32).Substring(0, 32));
-            using (Aes aes = Aes.Create())
+            catch (Exception ex)
             {
-                aes.Key = keyBytes;
-                aes.IV = new byte[16]; // IV par défaut (zéro)
-                using (MemoryStream ms = new MemoryStream())
-                using (CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                MessageBox.Show($"Erreur d'initialisation de la base: {ex.Message}", "Erreur critique");
+                Application.Exit(); // Ferme l'application si la base ne peut pas être initialisée
+            }
+        }
+        
+
+        // Méthode pour sauvegarder les mots de passe
+        private void LoadPasswords()
+        {
+            try
+            {
+                dataGridView.Rows.Clear();
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                 {
-                    byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
-                    cs.Write(plainBytes, 0, plainBytes.Length);
-                    cs.Close();
-                    return Convert.ToBase64String(ms.ToArray());
+                    connection.Open();
+                    string query = @"SELECT p.application, p.username 
+                            FROM Passwords p 
+                            JOIN Users u ON p.user_id = u.id 
+                            WHERE u.username = @username";
+
+                    SQLiteCommand command = new SQLiteCommand(query, connection);
+                    command.Parameters.AddWithValue("@username", currentUser);
+
+                    using (SQLiteDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            // N'affichez pas le mot de passe réel
+                            dataGridView.Rows.Add(reader["application"].ToString(),
+                                                 reader["username"].ToString(),
+                                                 "********");
+                        }
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erreur lors du chargement : {ex.Message}", "Erreur");
             }
         }
 
-        private string Decrypt(string cipherText, string key)
+        private void SavePasswords()
         {
-            byte[] keyBytes = Encoding.UTF8.GetBytes(key.PadRight(32).Substring(0, 32));
-            using (Aes aes = Aes.Create())
+            try
             {
-                aes.Key = keyBytes;
-                aes.IV = new byte[16]; // IV par défaut (zéro)
-                using (MemoryStream ms = new MemoryStream())
-                using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                 {
-                    byte[] cipherBytes = Convert.FromBase64String(cipherText);
-                    cs.Write(cipherBytes, 0, cipherBytes.Length);
-                    cs.Close();
-                    return Encoding.UTF8.GetString(ms.ToArray());
+                    connection.Open();
+
+                    // Récupérer l'ID de l'utilisateur
+                    string getUserIdQuery = "SELECT id FROM Users WHERE username = @username";
+                    SQLiteCommand getUserIdCmd = new SQLiteCommand(getUserIdQuery, connection);
+                    getUserIdCmd.Parameters.AddWithValue("@username", currentUser);
+                    int userId = Convert.ToInt32(getUserIdCmd.ExecuteScalar());
+
+                    // Supprimer les anciennes entrées
+                    string deleteQuery = "DELETE FROM Passwords WHERE user_id = @user_id";
+                    SQLiteCommand deleteCmd = new SQLiteCommand(deleteQuery, connection);
+                    deleteCmd.Parameters.AddWithValue("@user_id", userId);
+                    deleteCmd.ExecuteNonQuery();
+
+                    // Ajouter les nouvelles entrées
+                    foreach (DataGridViewRow row in dataGridView.Rows)
+                    {
+                        if (!row.IsNewRow)
+                        {
+                            string app = row.Cells["colApplication"].Value?.ToString() ?? "";
+                            string username = row.Cells["colUsername"].Value?.ToString() ?? "";
+                            string password = row.Cells["colPassword"].Value?.ToString() ?? "";
+
+                            string insertQuery = "INSERT INTO Passwords (user_id, application, username, password_hash) VALUES (@user_id, @app, @username, @password)";
+                            SQLiteCommand insertCmd = new SQLiteCommand(insertQuery, connection);
+                            insertCmd.Parameters.AddWithValue("@user_id", userId);
+                            insertCmd.Parameters.AddWithValue("@app", app);
+                            insertCmd.Parameters.AddWithValue("@username", username);
+                            insertCmd.Parameters.AddWithValue("@password", password);
+                            insertCmd.ExecuteNonQuery();
+                        }
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erreur lors de la sauvegarde : {ex.Message}", "Erreur");
             }
         }
 
-         // Bouton pour ajouter un mot de passe
+        private void btnGeneratePassword_Click(object sender, EventArgs e)
+        {
+            string generatedPassword = GeneratePassword();
+
+            // Afficher le mot de passe généré et proposer de le copier
+            if (MessageBox.Show($"Mot de passe généré : {generatedPassword}\n\nCopier dans le presse-papier ?",
+                               "Générateur de mot de passe",
+                               MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                Clipboard.SetText(generatedPassword);
+            }
+        }
+
+        // Bouton pour ajouter un mot de passe
         private void btnAdd_Click(object sender, EventArgs e)
         {
             string app = Microsoft.VisualBasic.Interaction.InputBox("Nom de l'application/site :", "Ajouter");
             string username = Microsoft.VisualBasic.Interaction.InputBox("Nom d'utilisateur :", "Ajouter");
-            string password = Microsoft.VisualBasic.Interaction.InputBox("Mot de passe :", "Ajouter");
 
-            if (!string.IsNullOrWhiteSpace(app) && !string.IsNullOrWhiteSpace(username) && !string.IsNullOrWhiteSpace(password))
+            // Proposer de générer un mot de passe
+            if (MessageBox.Show("Voulez-vous générer un mot de passe sécurisé ?",
+                               "Génération",
+                               MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                string encryptedPassword = Encrypt(password, encryptionKey);
-                dataGridView.Rows.Add(app, username, encryptedPassword);
+                string password = GeneratePassword();
+                string hashedPassword = HashPassword(password);
+                dataGridView.Rows.Add(app, username, "********"); // Masquer le vrai mot de passe
+                                                                  // Stocker le hash dans un Tag ou autre propriété si nécessaire
             }
             else
             {
-                MessageBox.Show("Tous les champs sont obligatoires.", "Erreur");
+                string password = Microsoft.VisualBasic.Interaction.InputBox("Mot de passe :", "Ajouter");
+                if (!string.IsNullOrWhiteSpace(app) && !string.IsNullOrWhiteSpace(username) && !string.IsNullOrWhiteSpace(password))
+                {
+                    string hashedPassword = HashPassword(password);
+                    dataGridView.Rows.Add(app, username, "********");
+                }
             }
         }
 
@@ -211,10 +291,6 @@ private void LoadPasswords()
                 }
             }
         }
-
-
-
-
 
         // a partir de la c'est les methodes liées a la partie graphique (boutons) 
 
@@ -287,11 +363,6 @@ private void LoadPasswords()
 
         }
         private void dataGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
-        private void Form1_Load_1(object sender, EventArgs e)
         {
 
         }
