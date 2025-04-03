@@ -6,9 +6,13 @@ using BCrypt.Net;
 
 namespace Projet___Gestionnaire_MDP
 {
+    // Formulaire de connexion/inscription pour le gestionnaire de mots de passe
     public class LoginForm : Form
     {
+        // Chaîne de connexion à la base de données SQLite
         private readonly string connectionString;
+
+        // Contrôles du formulaire
         private TextBox txtUsername;
         private TextBox txtPassword;
         private Button btnLogin;
@@ -16,14 +20,18 @@ namespace Projet___Gestionnaire_MDP
         private Label lblUsername;
         private Label lblPassword;
 
+        // Propriétés pour stocker les identifiants (utilisées après authentification réussie)
         public string Username { get; private set; }
+        public string Password { get; private set; } // Ajout de la propriété Password manquante
 
+        // Constructeur prenant la chaîne de connexion en paramètre
         public LoginForm(string connectionString)
         {
             this.connectionString = connectionString;
-            InitializeForm();
+            InitializeForm(); // Initialise l'interface graphique
         }
 
+        // Méthode d'initialisation de l'interface graphique
         private void InitializeForm()
         {
             // Configuration de la fenêtre
@@ -65,7 +73,7 @@ namespace Projet___Gestionnaire_MDP
             {
                 Location = new Point(140, 70),
                 Size = new Size(180, 20),
-                PasswordChar = '*',
+                PasswordChar = '*', // Masque les caractères saisis
                 Font = new Font("Segoe UI", 9, FontStyle.Regular)
             };
 
@@ -81,7 +89,7 @@ namespace Projet___Gestionnaire_MDP
                 Font = new Font("Segoe UI", 9, FontStyle.Bold)
             };
             btnLogin.FlatAppearance.BorderSize = 0;
-            btnLogin.Click += btnLogin_Click;
+            btnLogin.Click += btnLogin_Click; // Gestionnaire d'événement pour le clic
 
             // Bouton S'inscrire
             btnRegister = new Button
@@ -95,7 +103,7 @@ namespace Projet___Gestionnaire_MDP
                 Font = new Font("Segoe UI", 9, FontStyle.Bold)
             };
             btnRegister.FlatAppearance.BorderSize = 0;
-            btnRegister.Click += btnRegister_Click;
+            btnRegister.Click += btnRegister_Click; // Gestionnaire d'événement pour le clic
 
             // Ajout des contrôles au formulaire
             this.Controls.Add(lblUsername);
@@ -106,11 +114,13 @@ namespace Projet___Gestionnaire_MDP
             this.Controls.Add(btnRegister);
         }
 
+        // Gestionnaire d'événement pour le bouton de connexion
         private void btnLogin_Click(object sender, EventArgs e)
         {
             string username = txtUsername.Text;
             string password = txtPassword.Text;
 
+            // Validation des entrées
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
                 MessageBox.Show("Veuillez saisir un nom d'utilisateur et un mot de passe", "Erreur",
@@ -118,21 +128,25 @@ namespace Projet___Gestionnaire_MDP
                 return;
             }
 
+            // Authentification de l'utilisateur
             if (AuthenticateUser(username, password))
             {
+                // Stockage des identifiants pour une utilisation ultérieure
                 Username = username;
+                Password = password; // Stockage du mot de passe pour le déchiffrement
                 DialogResult = DialogResult.OK;
-                Close();
+                Close(); // Ferme le formulaire avec un résultat OK
             }
             else
             {
                 MessageBox.Show("Identifiants incorrects", "Erreur d'authentification",
                               MessageBoxButtons.OK, MessageBoxIcon.Error);
-                txtPassword.Clear();
-                txtPassword.Focus();
+                txtPassword.Clear(); // Efface le mot de passe saisi
+                txtPassword.Focus(); // Remet le focus sur le champ mot de passe
             }
         }
 
+        // Méthode pour authentifier un utilisateur avec la base de données
         private bool AuthenticateUser(string username, string password)
         {
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
@@ -147,6 +161,7 @@ namespace Projet___Gestionnaire_MDP
 
                     if (result != null)
                     {
+                        // Vérification du mot de passe hashé avec BCrypt
                         string storedHash = result.ToString();
                         return BCrypt.Net.BCrypt.Verify(password, storedHash);
                     }
@@ -155,11 +170,13 @@ namespace Projet___Gestionnaire_MDP
             return false;
         }
 
+        // Gestionnaire d'événement pour le bouton d'inscription
         private void btnRegister_Click(object sender, EventArgs e)
         {
             string username = txtUsername.Text;
             string password = txtPassword.Text;
 
+            // Validation des entrées
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
                 MessageBox.Show("Veuillez saisir un nom d'utilisateur et un mot de passe", "Erreur",
@@ -167,6 +184,7 @@ namespace Projet___Gestionnaire_MDP
                 return;
             }
 
+            // Vérification de la longueur du mot de passe
             if (password.Length < 8)
             {
                 MessageBox.Show("Le mot de passe doit contenir au moins 8 caractères", "Erreur",
@@ -180,7 +198,7 @@ namespace Projet___Gestionnaire_MDP
                 {
                     connection.Open();
 
-                    // Vérifier si l'utilisateur existe déjà
+                    // Vérification de l'existence de l'utilisateur
                     string checkQuery = "SELECT COUNT(*) FROM Users WHERE username = @username";
                     using (SQLiteCommand checkCmd = new SQLiteCommand(checkQuery, connection))
                     {
@@ -195,11 +213,12 @@ namespace Projet___Gestionnaire_MDP
                         }
                     }
 
-                    // Créer le nouvel utilisateur
+                    // Création du nouvel utilisateur avec mot de passe hashé
                     string insertQuery = "INSERT INTO Users (username, password_hash) VALUES (@username, @password_hash)";
                     using (SQLiteCommand insertCmd = new SQLiteCommand(insertQuery, connection))
                     {
                         insertCmd.Parameters.AddWithValue("@username", username);
+                        // Hashage du mot de passe avec BCrypt avant stockage
                         insertCmd.Parameters.AddWithValue("@password_hash", BCrypt.Net.BCrypt.HashPassword(password));
                         insertCmd.ExecuteNonQuery();
 
