@@ -20,7 +20,8 @@
   👉 `https://github.com/eCb7/Projet-GMDP.git`
 
 ![Clonage 1](https://github.com/user-attachments/assets/f2e68f9e-6dc9-4247-9c1f-9334651893aa)  
-![Clonage 2](https://github.com/user-attachments/assets/11e617d8-e251-4bb1-b915-88da2b926e9a)
+![Clonage 2](https://github.com/user-attachments/assets/52a775e5-7b8f-4086-a6fc-c8360719121b)
+
 
 - Cliquez ensuite sur **"Cloner"**.
 
