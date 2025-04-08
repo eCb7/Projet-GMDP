@@ -1,7 +1,3 @@
-Voici une version corrigée et améliorée de ton texte, avec une mise en forme plus claire, un ton un peu plus professionnel, et des instructions faciles à suivre :
-
----
-
 ## Prérequis pour l’exécution du projet
 
 ### 1. Installer Visual Studio 2022
@@ -49,7 +45,3 @@ Voici une version corrigée et améliorée de ton texte, avec une mise en forme 
     *(le mot de passe doit comporter au minimum 8 caractères)*
 
 - Cliquez sur **"S’inscrire"**, puis **"Connexion"** pour accéder à l’interface du gestionnaire de mots de passe.
-
----
-
-Si tu veux, je peux aussi générer une version PDF de cette procédure ou te faire un README propre pour ton dépôt GitHub. Tu veux ?
