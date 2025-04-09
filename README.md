@@ -40,7 +40,7 @@
 ![Connexion](https://github.com/user-attachments/assets/70c82828-f6ff-4b90-8081-1c7bef3dded8)
 
 #### Création d’un compte :
-- Remplissez les champs :
+- Remplissez les champs : (EXEMPLE)
   - **Nom** : `root`
   - **Mot de passe** : `rootroot`  
     *(le mot de passe doit comporter au minimum 8 caractères)*
